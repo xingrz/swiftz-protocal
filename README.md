@@ -5,6 +5,7 @@ swiftz-protocal
 
 The project is **FOR STUDY ONLY**. Attacking, hacking or any other illegal purposes are **STRICTLY PROHIBITED**.
 
+----------
 
 ## Protocal version
 
@@ -40,6 +41,63 @@ For example:
   * **ACCESSPOINT**: String
   * **DHCP**: Boolean
   * **VERSION**: String
+
+
+## Encoding
+
+### Charset
+
+All strings in the protocal is in `GB2312`.
+
+### Packet
+
+A naked (non-encrypted) packet is in this structure:
+
+- 1 byte of `ACTION` represented what does the packet do
+- 1 byte represented the length of whole packet
+- 16 bytes `MD5` hash
+- 1 byte of the `key` of the first field
+- 1 byte of the `length` of the first field
+- the `data` of the first field
+- 1 byte of the `key` of the second field
+- 1 byte of the `length` of the second field
+- the `data` of the second field
+- ......
+
+### Generate a packet
+
+1. Construct a packet as it's descripted above, of course, leaving those 16 bytes of `MD5` hash be 16 bytes of `0x00`
+2. Generate a `MD5` hash of the whole packet
+3. Fill those 16 bytes with the hash you got
+4. Encrypt it of course :)
+
+### Parse a packet you recieved
+
+1. Decrypt it
+2. Check the `MD5` hash (optional but recommanded for security)
+3. You know how to do :)
+
+### Encryption/Decryption
+
+See `examples` directory.
+
+
+## Flow
+
+1. Send a initialization packet to `1.1.1.8` without waiting for any response
+2. Search for authorization server (optional)
+3. Request for access points list (optional)
+4. Make a **login** request, and wait for a response
+5. If successed, make a **breathe** every 30 seconds
+
+After it is logged in, you should listen at udp port `4999` for disconnecting announcement you may recieved.
+
+Make a **logout** request to end the session.
+
+
+## Packets
+
+(To be continued)
 
 
 ## Consts
