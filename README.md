@@ -106,6 +106,7 @@ Make a **logout** request to end the session.
 
 ### Initialize
 
+(to be continued...)
 
 ### Login
 
@@ -148,7 +149,22 @@ Make a **logout** request to end the session.
 - Only contains `SUCCESS`, `SESSION` and `MESSAGE` if not successed (i.e. wrong password)
 - Will contains an unknown field `0x95` with 24 bytes of `0x00` if it is in low-speed mode.
 
-### Search
+### Search for authorization server
+
+(to be continued...)
+
+### Get list of access points
+
+(to be continued...)
+
+### Breathe
+
+(to be continued...)
+
+### Logout
+
+(to be continued...)
+
 
 ## Consts
 
