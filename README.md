@@ -18,11 +18,11 @@ The protocal in this documentation is written as **procedure**.
 
 For example:
 
-    SendTo: 172.16.1.180:3848, UDP
+    local:3848 -> 172.16.1.180:3848
     Encrypt: Crypto3848
     Action: LOGIN
     Data:
-      MAC as hex(16)
+      MAC as binary(16)
       USERNAME as string
       PASSWORD as string
       IP as string
@@ -30,11 +30,11 @@ For example:
       DHCP as boolean
       VERSION as string
 
-- Send to remote `172.16.1.180` port `3848` in `UDP`.
+- Send to remote `172.16.1.180` port `3848` from local port `3848` (in `UDP` by default).
 - The packet should be encrypted with `Crypto3848` before sending.
-- The action the packet represented is `ACTION` (see **Consts** section below).
-- The packet contains these fields (see **Consts** section below):
-  * **MAC**: Hexadecimal, with fixed length 16
+- The action the packet represented is `ACTION` (see [Consts](#consts) section below).
+- The packet contains these fields (see [Consts](#consts) section below):
+  * **MAC**: Binary, with fixed length 16 bytes
   * **USERNAME**: String
   * **PASSWORD**: String
   * **IP**: String
@@ -47,7 +47,14 @@ For example:
 
 ### Charset
 
-All strings in the protocal is in `GB2312`.
+All strings in the protocal is in `GB2312` charset.
+
+### Types
+
+- **String**: transport in `GB2312`.
+- **Number**: as it is. (i.e. `0xFF` for `255`)
+- **Boolean**: `0x00` for `false`, `0x01` for `true`.
+- **Binary**: as it is. (i.e. `0x4A 0x21 0x39 0xC0` for `4A2139C0`)
 
 ### Packet
 
@@ -97,8 +104,51 @@ Make a **logout** request to end the session.
 
 ## Packets
 
-(To be continued)
+### Initialize
 
+
+### Login
+
+**Send:**
+
+    local:3848 -> 172.16.1.180:3848
+    Encrypt: Crypto3848
+    Action: LOGIN
+    Data:
+      MAC as binary(16)
+      USERNAME as string
+      PASSWORD as string
+      IP as string
+      ACCESSPOINT as string
+      DHCP as boolean
+      VERSION as string
+
+**Recive:**
+
+    172.16.1.180:3848 -> local:3848
+    Encrypt: Crypto3848
+    Action: LOGIN_RET
+    Data:
+      SUCCESS as boolean
+      SESSION as string
+      UNKNOWN05 as binary(1)
+      UNKNOWN06 as binary(1)
+      MESSAGE as string
+      BLOCK34 as binary(4)
+      BLOCK35 as binary(4)
+      BLOCK36 as binary(4)
+      BLOCK37 as binary(4)
+      BLOCK38 as binary(4)
+      WEBSITE as string
+      UNKNOWN23 as binary(1)
+      UNKNOWN20 as binary(1)
+
+**Notes:**
+
+- Only contains `SUCCESS`, `SESSION` and `MESSAGE` if not successed (i.e. wrong password)
+- Will contains an unknown field `0x95` with 24 bytes of `0x00` if it is in low-speed mode.
+
+### Search
 
 ## Consts
 
