@@ -26,7 +26,7 @@ For example:
       USERNAME as string
       PASSWORD as string
       IP as string
-      ACCESSPOINT as string
+      ENTRY as string
       DHCP as boolean
       VERSION as string
 
@@ -38,7 +38,7 @@ For example:
   * **USERNAME**: String
   * **PASSWORD**: String
   * **IP**: String
-  * **ACCESSPOINT**: String
+  * **ENTRY**: String
   * **DHCP**: Boolean
   * **VERSION**: String
 
@@ -52,7 +52,8 @@ All strings in the protocal is in `GB2312` charset.
 ### Types
 
 - **String**: transport in `GB2312`.
-- **Number**: as it is. (i.e. `0xFF` for `255`)
+- **Char**: number in 1 byte. (i.e. `0xFF` for `255`)
+- **Integer**: number in 4 bytes. (i.e. `0x00 0x00 0x00 0xFF` for `255`)
 - **Boolean**: `0x00` for `false`, `0x01` for `true`.
 - **Binary**: as it is. (i.e. `0x4A 0x21 0x39 0xC0` for `4A2139C0`)
 
@@ -110,11 +111,26 @@ Make a **logout** request to end the session.
 
 ### Search for authorization server
 
-(to be continued...)
+**Send:**
+
+    local:3848 -> 1.1.1.8:3850
+    Encrypt: Crypto3848
+    Action: SERVER
+    Data:
+      SESSION as string
+      IP as string(16)
+      MAC as binary(16)
 
 ### Get list of access points
 
-(to be continued...)
+**Send:**
+
+    local:3848 -> 172.16.1.180:3848
+    Encrypt: Crypto3848
+    Action: ENTRIES
+    Data:
+      SESSION as string
+      MAC as binary(16)
 
 ### Login
 
@@ -128,7 +144,7 @@ Make a **logout** request to end the session.
       USERNAME as string
       PASSWORD as string
       IP as string
-      ACCESSPOINT as string
+      ENTRY as string
       DHCP as boolean
       VERSION as string
 
@@ -159,11 +175,41 @@ Make a **logout** request to end the session.
 
 ### Breathe
 
-(to be continued...)
+**Send:**
+
+    local:3848 -> 172.16.1.180:3848
+    Encrypt: Crypto3848
+    Action: BREATH
+    Data:
+      SESSION as string
+      IP as string(16)
+      MAC as binary(16)
+      INDEX as integer
+      BLOCK2A as binary(4)
+      BLOCK2B as binary(4)
+      BLOCK2C as binary(4)
+      BLOCK2D as binary(4)
+      BLOCK2E as binary(4)
+      BLOCK2F as binary(4)
 
 ### Logout
 
-(to be continued...)
+**Send:**
+
+    local:3848 -> 172.16.1.180:3848
+    Encrypt: Crypto3848
+    Action: BREATH
+    Data:
+      SESSION as string
+      IP as string(16)
+      MAC as binary(16)
+      INDEX as integer
+      BLOCK2A as binary(4)
+      BLOCK2B as binary(4)
+      BLOCK2C as binary(4)
+      BLOCK2D as binary(4)
+      BLOCK2E as binary(4)
+      BLOCK2F as binary(4)
 
 ### Being disconnected
 
@@ -193,10 +239,10 @@ Make a **logout** request to end the session.
     LOGOUT_RET = 0x06
 
     // get access point
-    ACCESSPOINT = 0x07
+    ENTRIES = 0x07
 
     // return access point
-    ACCESSPOINT_RET = 0x08
+    ENTRIES_RET = 0x08
 
     // disconnect
     DISCONNECT = 0x09
@@ -238,7 +284,7 @@ Make a **logout** request to end the session.
     IP = 0x09
 
     // access point
-    ACCESSPOINT = 0x0A
+    ENTRY = 0x0A
 
     // message (NOTE: wrong in return packet)
     MESSAGE = 0x0B
@@ -253,7 +299,7 @@ Make a **logout** request to end the session.
     WEBSITE = 0x13
 
     // serial no
-    SN = 0x14
+    INDEX = 0x14
 
     // version
     VERSION = 0x1F
