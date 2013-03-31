@@ -1,4 +1,4 @@
-swiftz-protocal
+Swiftz Protocal
 ==========
 
 **Swiftz** is a project aims to create a portable replacement of Edusupplicant, base on the analysis on Edusupplicant 3.6.5.
@@ -9,7 +9,7 @@ The project is **FOR STUDY ONLY**. Attacking, hacking or any other illegal purpo
 
 ## Protocal version
 
-**The version of Edusupplicant based on:** `3.6.5`
+The current analysis is based on **Edusupplicant 3.6.5**.
 
 
 ## Representation
@@ -107,11 +107,18 @@ Make a **logout** request to end the session.
 
 ### Initialize
 
-(to be continued...)
+#### Send
+
+    info sock ini
+
+#### Notes
+
+* No decryption is required.
+* No response would be make by the server.
 
 ### Search for authorization server
 
-**Send:**
+#### Send
 
     local:3848 -> 1.1.1.8:3850
     Encrypt: Crypto3848
@@ -123,7 +130,7 @@ Make a **logout** request to end the session.
 
 ### Get list of access points
 
-**Send:**
+#### Send
 
     local:3848 -> 172.16.1.180:3848
     Encrypt: Crypto3848
@@ -134,7 +141,7 @@ Make a **logout** request to end the session.
 
 ### Login
 
-**Send:**
+#### Send
 
     local:3848 -> 172.16.1.180:3848
     Encrypt: Crypto3848
@@ -148,7 +155,7 @@ Make a **logout** request to end the session.
       DHCP as boolean
       VERSION as string
 
-**Recive:**
+#### Recive
 
     172.16.1.180:3848 -> local:3848
     Encrypt: Crypto3848
@@ -168,14 +175,14 @@ Make a **logout** request to end the session.
       UNKNOWN23 as binary(1)
       UNKNOWN20 as binary(1)
 
-**Notes:**
+#### Notes
 
 - Only contains `SUCCESS`, `SESSION` and `MESSAGE` if not successed (i.e. wrong password)
 - Will contains an unknown field `0x95` with 24 bytes of `0x00` if it is in low-speed mode.
 
 ### Breathe
 
-**Send:**
+#### Send
 
     local:3848 -> 172.16.1.180:3848
     Encrypt: Crypto3848
@@ -194,7 +201,7 @@ Make a **logout** request to end the session.
 
 ### Logout
 
-**Send:**
+#### Send
 
     local:3848 -> 172.16.1.180:3848
     Encrypt: Crypto3848
