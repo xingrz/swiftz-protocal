@@ -11,6 +11,8 @@ The project is **FOR STUDY ONLY**. Attacking, hacking or any other illegal purpo
 
 The current analysis is based on **Edusupplicant 3.6.5**.
 
+Tested compatible with **Edusupplicant 3.7.8**.
+
 
 ## Representation
 
