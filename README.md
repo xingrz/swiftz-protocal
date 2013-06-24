@@ -9,10 +9,16 @@ The project is **FOR STUDY ONLY**. Attacking, hacking or any other illegal purpo
 
 ## Protocal version
 
-The current analysis is based on **Edusupplicant 3.6.5**.
+The original analysis is based on **Edusupplicant 3.6.5**.
 
 Tested compatible with **Edusupplicant 3.7.8**.
 
+
+## Implementations based on this analysis
+
+* [SwiftzMac](https://github.com/xingrz/SwiftzMac) (for Mac OS X >= 10.8)
+* [swiftz.js](https://github.com/xingrz/swiftzjs) (for Linux/Mac, command-line, still in progress)
+* OpenSupplicant (for Windows, stopped development for a long time)
 
 ## Representation
 
@@ -20,29 +26,31 @@ The protocal in this documentation is written as **procedure**.
 
 For example:
 
-    local:3848 -> 172.16.1.180:3848
-    Encrypt: Crypto3848
-    Action: LOGIN
-    Data:
-      MAC as binary(16)
-      USERNAME as string
-      PASSWORD as string
-      IP as string
-      ENTRY as string
-      DHCP as boolean
-      VERSION as string
+```
+local:3848 -> 172.16.1.180:3848
+Encrypt: crypto3848
+Action: LOGIN
+Data:
+  MAC as data(16)
+  USERNAME as string
+  PASSWORD as string
+  IP as string
+  ENTRY as string
+  DHCP as boolean
+  VERSION as string
+```
 
-- Send to remote `172.16.1.180` port `3848` from local port `3848` (in `UDP` by default).
-- The packet should be encrypted with `Crypto3848` before sending.
-- The action the packet represented is `ACTION` (see [Consts](#consts) section below).
-- The packet contains these fields (see [Consts](#consts) section below):
-  * **MAC**: Binary, with fixed length 16 bytes
-  * **USERNAME**: String
-  * **PASSWORD**: String
-  * **IP**: String
-  * **ENTRY**: String
-  * **DHCP**: Boolean
-  * **VERSION**: String
+1. Send to remote `172.16.1.180` port `3848` from local port `3848` (in `UDP` by default).
+2. The packet should be encrypted with `crypto3848` before sending.
+3. The action the packet represented is `ACTION` (see [Consts](#consts) section below).
+4. The packet contains these fields (see [Consts](#consts) section below):
+  1. **MAC**: Binary data, with fixed length 16 bytes
+  2. **USERNAME**: String
+  3. **PASSWORD**: String
+  4. **IP**: String
+  5. **ENTRY**: String
+  6. **DHCP**: Boolean
+  7. **VERSION**: String
 
 
 ## Encoding
@@ -53,26 +61,26 @@ All strings in the protocal is in `GB2312` charset.
 
 ### Types
 
-- **String**: transport in `GB2312`.
+- **String**: strings transport in `GB2312`.
 - **Char**: number in 1 byte. (i.e. `0xFF` for `255`)
 - **Integer**: number in 4 bytes. (i.e. `0x00 0x00 0x00 0xFF` for `255`)
 - **Boolean**: `0x00` for `false`, `0x01` for `true`.
-- **Binary**: as it is. (i.e. `0x4A 0x21 0x39 0xC0` for `4A2139C0`)
+- **Data**: as it is. (i.e. `0x4A 0x21 0x39 0xC0` for `4A2139C0`)
 
 ### Packet
 
 A naked (non-encrypted) packet is in this structure:
 
-- 1 byte of `ACTION` represented what does the packet do
-- 1 byte represented the length of whole packet
-- 16 bytes `MD5` hash
-- 1 byte of the `key` of the first field
-- 1 byte of the `length` of the first field
-- the `data` of the first field
-- 1 byte of the `key` of the second field
-- 1 byte of the `length` of the second field
-- the `data` of the second field
-- ......
+1. 1 byte of `ACTION` represented what does the packet do
+2. 1 byte represented the length of whole packet
+3. 16 bytes `MD5` hash
+4. 1 byte of the `key` of the first field
+5. 1 byte of the `length` of the first field
+6. the `data` of the first field
+7. 1 byte of the `key` of the second field
+8. 1 byte of the `length` of the second field
+9. the `data` of the second field
+10. ......
 
 ### Generate a packet
 
@@ -89,7 +97,71 @@ A naked (non-encrypted) packet is in this structure:
 
 ### Encryption/Decryption
 
-See `examples` directory.
+#### "crypto3848"
+
+The `crypto3848` algorithm is a very simple encryption algorithm that changes the order of every byte from `ABCDEFGH` to `HDEFCBAG`.
+
+Here's a piece of code in JavaScript for reference:
+
+```js
+function encrypt (buffer) {
+  for (var i = 0; i < buffer.length; i++) {
+    buffer[i] = (buffer[i] & 0x80) >> 6
+              | (buffer[i] & 0x40) >> 4
+              | (buffer[i] & 0x20) >> 2
+              | (buffer[i] & 0x10) << 2
+              | (buffer[i] & 0x08) << 2
+              | (buffer[i] & 0x04) << 2
+              | (buffer[i] & 0x02) >> 1
+              | (buffer[i] & 0x01) << 7
+  }
+}
+
+function decrypt (buffer) {
+  for (var i = 0; i < buffer.length; i++) {
+    buffer[i] = (buffer[i] & 0x80) >> 7
+              | (buffer[i] & 0x40) >> 2
+              | (buffer[i] & 0x20) >> 2
+              | (buffer[i] & 0x10) >> 2
+              | (buffer[i] & 0x08) << 2
+              | (buffer[i] & 0x04) << 4
+              | (buffer[i] & 0x02) << 6
+              | (buffer[i] & 0x01) << 1
+  }
+}
+```
+
+#### "crypto3849"
+
+Like `crypto3848` but different order that from `ABCDEFGH` to `ECBHAFDG`.
+
+```js
+function encrypt (buffer) {
+  for (var i = 0; i < buffer.length; i++) {
+    buffer[i] = (buffer[i] & 0x80) >> 4
+              | (buffer[i] & 0x40) >> 1
+              | (buffer[i] & 0x20) << 1
+              | (buffer[i] & 0x10) >> 3
+              | (buffer[i] & 0x08) << 4
+              | (buffer[i] & 0x04)
+              | (buffer[i] & 0x02) >> 1
+              | (buffer[i] & 0x01) << 4
+  }
+}
+
+function decrypt (buffer) {
+  for (var i = 0; i < buffer.length; i++) {
+    buffer[i] = (buffer[i] & 0x80) >> 4
+              | (buffer[i] & 0x40) >> 1
+              | (buffer[i] & 0x20) << 1
+              | (buffer[i] & 0x10) >> 4
+              | (buffer[i] & 0x08) << 4
+              | (buffer[i] & 0x04)
+              | (buffer[i] & 0x02) << 3
+              | (buffer[i] & 0x01) << 1
+  }
+}
+```
 
 
 ## Flow
