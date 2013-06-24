@@ -175,7 +175,7 @@ Just send a [**initialization**](#initialize) packet to `1.1.1.8` without waitin
 
 ### Get online
 
-1. Make a [**login**](#login) request, and wait for a response
+1. Make a [**online**](#online) request, and wait for a response
 2. If successed, some servers may also need a [**confirm**](#confirm)
 
 ### During you're online
@@ -184,7 +184,7 @@ Just send a [**initialization**](#initialize) packet to `1.1.1.8` without waitin
 2. Also, listen for [**disconnecting**](#being-disconnected) notification you may recieved.
 
 ### Get offline
-Make a [**logout**](#logout) request to end the session.
+Make a [**offline**](#offline) request to end the session.
 
 
 ## Packets
@@ -206,7 +206,7 @@ info sock ini
 
 ```
 local:3848 -> 1.1.1.8:3850
-Encrypt: Crypto3848
+Encrypt: crypto3848
 Action: SERVER
 Data:
   SESSION as string
@@ -214,20 +214,47 @@ Data:
   MAC as data(16)
 ```
 
+#### Receive
+
+```
+1.1.1.8:3850 -> local:3848
+Encrypt: crypto3848
+Action: SERVER_RET
+Data:
+  SERVER as data(4)
+  UNKNOWN0D as data(4)
+```
+
+* `SERVER` is received as 4-byte data that each byte indicates a part of an IPv4 address, e.g. `AC1001B4` for `172.16.1.180`.
+
 ### Get entries
 
 #### Send
 
 ```
-local:3848 -> 172.16.1.180:3848
-Encrypt: Crypto3848
+local:3848 -> server:3848
+Encrypt: crypto3848
 Action: ENTRIES
 Data:
   SESSION as string
   MAC as binary(16)
 ```
 
-### Login
+#### Receive
+
+```
+server:3848 -> local:3848
+Encrypt: crypto3848
+Action: ENTRIES_RET
+Data:
+  ENTRY as string
+  ENTRY as string
+  ...
+```
+
+* It may be more than one `ENTRY` field.
+
+### Online
 
 #### Send
 
@@ -245,7 +272,7 @@ Data:
   VERSION as string
 ```
 
-#### Recive
+#### Receive
 
 ```
 172.16.1.180:3848 -> local:3848
@@ -293,7 +320,7 @@ Data:
   BLOCK2F as data(4)
 ```
 
-### Logout
+### Offline
 
 #### Send
 
@@ -397,6 +424,9 @@ MESSAGE = 0x0B
 
 // server ip address
 SERVER = 0x0C
+
+// unknown, appears while received server ip address
+UNKNOWN0D = 0x0D
 
 // is dhcp enabled
 DHCP = 0x0E
