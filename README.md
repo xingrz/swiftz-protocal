@@ -359,7 +359,17 @@ LOGOUT_RET:
 
 ### Being disconnected
 
-(to be continued...)
+```
+server:2001 -> local:4999 crypto3848
+DISCONNECT:
+  SESSION as string
+  REASON as char
+```
+
+* Possible values of `REASON`:
+  * `0x00` - No valid breathe is made for a long time.
+  * `0x01` - You're disconnected forcibly (by administrator, maybe).
+  * `0x02` - You've reached your network traffic limit.
 
 
 ## Consts
