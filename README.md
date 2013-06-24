@@ -251,7 +251,7 @@ ENTRIES_RET:
 ```
 local:3848 -> server:3848 crypto3848
 LOGIN:
-  MAC as data(16)
+  MAC as data(6)
   USERNAME as string
   PASSWORD as string
   IP as string
@@ -289,8 +289,27 @@ LOGIN_RET:
 
 #### Send
 
+```
+local:random -> server:3849 crypto3849
+CONFIRM:
+  USERNAME as string
+  MAC as data(6)
+  IP as string
+  ENTRY as string
+```
+
 #### Receive
 
+```
+server:3849 -> local:random
+CONFIRM_RET
+  UNKNOWN30 as data(4)
+  UNKNOWN31 as data(4)
+  UNKNOWN32 as char
+```
+
+* The packet is sent and receive via the same random port
+* 3 bytes of `0x00` appears before the md5 checksum of the packet possibly by a BUG. The length of the whole packet is calculated with those 3 bytes included.
 
 ### Breathe
 
@@ -358,6 +377,8 @@ LOGOUT_RET:
 ```
 
 ### Being disconnected
+
+Once you have bean disconnected, you'll receive a packet from the server:
 
 ```
 server:2001 -> local:4999 crypto3848
