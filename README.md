@@ -27,10 +27,8 @@ The protocal in this documentation is written as **procedure**.
 For example:
 
 ```
-local:3848 -> 172.16.1.180:3848
-Encrypt: crypto3848
-Action: LOGIN
-Data:
+local:3848 -> server:3848 crypto3848
+LOGIN:
   MAC as data(16)
   USERNAME as string
   PASSWORD as string
@@ -40,10 +38,10 @@ Data:
   VERSION as string
 ```
 
-1. Send to remote `172.16.1.180` port `3848` from local port `3848` (in `UDP` by default).
-2. The packet should be encrypted with `crypto3848` before sending.
-3. The action the packet represented is `ACTION` (see [Consts](#consts) section below).
-4. The packet contains these fields (see [Consts](#consts) section below):
+1. Send to remote server port `3848` from local port `3848` (all packets send via `UDP`). 
+2. The packet is encrypted with `crypto3848`.
+3. The packet represents an `LOGIN` action (see [Consts / Actions](#actions) section below).
+4. The packet contains these fields (see [Consts / Fields](#fields) section below):
   1. **MAC**: Binary data, with fixed length 16 bytes
   2. **USERNAME**: String
   3. **PASSWORD**: String
@@ -205,10 +203,8 @@ info sock ini
 #### Send
 
 ```
-local:3848 -> 1.1.1.8:3850
-Encrypt: crypto3848
-Action: SERVER
-Data:
+local:3848 -> 1.1.1.8:3850 crypto3848
+SERVER:
   SESSION as string
   IP as string(16)
   MAC as data(16)
@@ -217,10 +213,8 @@ Data:
 #### Receive
 
 ```
-1.1.1.8:3850 -> local:3848
-Encrypt: crypto3848
-Action: SERVER_RET
-Data:
+1.1.1.8:3850 -> local:3848 crypto3848
+SERVER_RET:
   SERVER as data(4)
   UNKNOWN0D as data(4)
 ```
@@ -232,10 +226,8 @@ Data:
 #### Send
 
 ```
-local:3848 -> server:3848
-Encrypt: crypto3848
-Action: ENTRIES
-Data:
+local:3848 -> server:3848 crypto3848
+ENTRIES:
   SESSION as string
   MAC as binary(16)
 ```
@@ -243,10 +235,8 @@ Data:
 #### Receive
 
 ```
-server:3848 -> local:3848
-Encrypt: crypto3848
-Action: ENTRIES_RET
-Data:
+server:3848 -> local:3848 crypto3848
+ENTRIES_RET:
   ENTRY as string
   ENTRY as string
   ...
@@ -259,11 +249,9 @@ Data:
 #### Send
 
 ```
-local:3848 -> 172.16.1.180:3848
-Encrypt: Crypto3848
-Action: LOGIN
-Data:
-  MAC as binary(16)
+local:3848 -> server:3848 crypto3848
+LOGIN:
+  MAC as data(16)
   USERNAME as string
   PASSWORD as string
   IP as string
@@ -275,42 +263,45 @@ Data:
 #### Receive
 
 ```
-172.16.1.180:3848 -> local:3848
-Encrypt: Crypto3848
-Action: LOGIN_RET
-Data:
+server:3848 -> local:3848 crypto3848
+LOGIN_RET:
   SUCCESS as boolean
   SESSION as string
-  UNKNOWN05 as byte
-  UNKNOWN06 as byte
+  UNKNOWN05 as char
+  UNKNOWN06 as char
   MESSAGE as string
+  UNKNOWN95 as data(24)
+  UNKNOWN06 as char
   BLOCK34 as data(4)
   BLOCK35 as data(4)
   BLOCK36 as data(4)
   BLOCK37 as data(4)
   BLOCK38 as data(4)
   WEBSITE as string
-  UNKNOWN23 as byte
-  UNKNOWN20 as byte
+  UNKNOWN23 as char
+  UNKNOWN20 as char
 ```
 
-#### Notes
-
 * Only contains `SUCCESS`, `SESSION` and `MESSAGE` if not successed (i.e. wrong password)
-* Will contains an unknown field `0x95` with 24 bytes of `0x00` if it is in low-speed mode.
+* Will contains an unknown field `UNKNOWN95` with 24 bytes of `0x00` and an unknown field `UNKNOWN06` if it is in low-speed mode.
+
+### Confirm
+
+#### Send
+
+#### Receive
+
 
 ### Breathe
 
 #### Send
 
 ```
-local:3848 -> 172.16.1.180:3848
-Encrypt: Crypto3848
-Action: BREATH
-Data:
+local:3848 -> server:3848 crypto3848
+BREATHE:
   SESSION as string
   IP as string(16)
-  MAC as binary(16)
+  MAC as data(16)
   INDEX as integer
   BLOCK2A as data(4)
   BLOCK2B as data(4)
@@ -318,6 +309,19 @@ Data:
   BLOCK2D as data(4)
   BLOCK2E as data(4)
   BLOCK2F as data(4)
+```
+
+* The initial value of `INDEX` is `0x01000000` and increases 3 after every breathe.
+* `INDEX` should not be increased unless a valid `BREATHE_RET` is recevied, because you may lost packets in low-speed mode.
+
+#### Receive
+
+```
+server:3848 -> local:3848 crypto3848
+BREATHE_RET:
+  SUCCESS as boolean
+  SESSION as string
+  INDEX as integer
 ```
 
 ### Offline
@@ -325,13 +329,11 @@ Data:
 #### Send
 
 ```
-local:3848 -> 172.16.1.180:3848
-Encrypt: Crypto3848
-Action: BREATH
-Data:
+local:3848 -> server:3848 crypto3848
+LOGOUT:
   SESSION as string
   IP as string(16)
-  MAC as binary(16)
+  MAC as data(16)
   INDEX as integer
   BLOCK2A as data(4)
   BLOCK2B as data(4)
@@ -339,6 +341,20 @@ Data:
   BLOCK2D as data(4)
   BLOCK2E as data(4)
   BLOCK2F as data(4)
+```
+
+* The initial value of `INDEX` is `0x01000000` and increases 3 after every breathe.
+* `INDEX` should not be increased unless a valid `BREATHE_RET` is recevied, because you may lost packets in low-speed mode.
+* It's very like a `BREATHE` packet.
+
+#### Receive
+
+```
+server:3848 -> local:3848 crypto3848
+LOGOUT_RET:
+  SUCCESS as boolean
+  SESSION as string
+  INDEX as integer
 ```
 
 ### Being disconnected
