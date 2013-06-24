@@ -166,26 +166,36 @@ function decrypt (buffer) {
 
 ## Flow
 
-1. Send a initialization packet to `1.1.1.8` without waiting for any response
-2. Search for authorization server (optional)
-3. Request for access points list (optional)
-4. Make a **login** request, and wait for a response
-5. If successed, make a **breathe** every 30 seconds
+### Startup
+Just send a [**initialization**](#initialize) packet to `1.1.1.8` without waiting for any response
 
-After it is logged in, you should listen at udp port `4999` for disconnecting announcement you may recieved.
+### First-run initialization
+1. Search for [**authorization server**](#search-for-authorization-server)
+2. Get [**entries list**](#get-entries)
 
-Make a **logout** request to end the session.
+### Get online
+
+1. Make a [**login**](#login) request, and wait for a response
+2. If successed, some servers may also need a [**confirm**](#confirm)
+
+### During you're online
+
+1. Make a [**breathe**](#breathe) every 30 seconds
+2. Also, listen for [**disconnecting**](#being-disconnected) notification you may recieved.
+
+### Get offline
+Make a [**logout**](#logout) request to end the session.
 
 
 ## Packets
 
 ### Initialize
 
-#### Send
+Just send this plain text to `1.1.1.8` port `3850` via UDP.
 
-    info sock ini
-
-#### Notes
+```
+info sock ini
+```
 
 * No decryption is required.
 * No response would be make by the server.
@@ -194,103 +204,115 @@ Make a **logout** request to end the session.
 
 #### Send
 
-    local:3848 -> 1.1.1.8:3850
-    Encrypt: Crypto3848
-    Action: SERVER
-    Data:
-      SESSION as string
-      IP as string(16)
-      MAC as binary(16)
+```
+local:3848 -> 1.1.1.8:3850
+Encrypt: Crypto3848
+Action: SERVER
+Data:
+  SESSION as string
+  IP as string(16)
+  MAC as data(16)
+```
 
-### Get list of access points
+### Get entries
 
 #### Send
 
-    local:3848 -> 172.16.1.180:3848
-    Encrypt: Crypto3848
-    Action: ENTRIES
-    Data:
-      SESSION as string
-      MAC as binary(16)
+```
+local:3848 -> 172.16.1.180:3848
+Encrypt: Crypto3848
+Action: ENTRIES
+Data:
+  SESSION as string
+  MAC as binary(16)
+```
 
 ### Login
 
 #### Send
 
-    local:3848 -> 172.16.1.180:3848
-    Encrypt: Crypto3848
-    Action: LOGIN
-    Data:
-      MAC as binary(16)
-      USERNAME as string
-      PASSWORD as string
-      IP as string
-      ENTRY as string
-      DHCP as boolean
-      VERSION as string
+```
+local:3848 -> 172.16.1.180:3848
+Encrypt: Crypto3848
+Action: LOGIN
+Data:
+  MAC as binary(16)
+  USERNAME as string
+  PASSWORD as string
+  IP as string
+  ENTRY as string
+  DHCP as boolean
+  VERSION as string
+```
 
 #### Recive
 
-    172.16.1.180:3848 -> local:3848
-    Encrypt: Crypto3848
-    Action: LOGIN_RET
-    Data:
-      SUCCESS as boolean
-      SESSION as string
-      UNKNOWN05 as binary(1)
-      UNKNOWN06 as binary(1)
-      MESSAGE as string
-      BLOCK34 as binary(4)
-      BLOCK35 as binary(4)
-      BLOCK36 as binary(4)
-      BLOCK37 as binary(4)
-      BLOCK38 as binary(4)
-      WEBSITE as string
-      UNKNOWN23 as binary(1)
-      UNKNOWN20 as binary(1)
+```
+172.16.1.180:3848 -> local:3848
+Encrypt: Crypto3848
+Action: LOGIN_RET
+Data:
+  SUCCESS as boolean
+  SESSION as string
+  UNKNOWN05 as byte
+  UNKNOWN06 as byte
+  MESSAGE as string
+  BLOCK34 as data(4)
+  BLOCK35 as data(4)
+  BLOCK36 as data(4)
+  BLOCK37 as data(4)
+  BLOCK38 as data(4)
+  WEBSITE as string
+  UNKNOWN23 as byte
+  UNKNOWN20 as byte
+```
 
 #### Notes
 
-- Only contains `SUCCESS`, `SESSION` and `MESSAGE` if not successed (i.e. wrong password)
-- Will contains an unknown field `0x95` with 24 bytes of `0x00` if it is in low-speed mode.
+* Only contains `SUCCESS`, `SESSION` and `MESSAGE` if not successed (i.e. wrong password)
+* Will contains an unknown field `0x95` with 24 bytes of `0x00` if it is in low-speed mode.
 
 ### Breathe
 
 #### Send
 
-    local:3848 -> 172.16.1.180:3848
-    Encrypt: Crypto3848
-    Action: BREATH
-    Data:
-      SESSION as string
-      IP as string(16)
-      MAC as binary(16)
-      INDEX as integer
-      BLOCK2A as binary(4)
-      BLOCK2B as binary(4)
-      BLOCK2C as binary(4)
-      BLOCK2D as binary(4)
-      BLOCK2E as binary(4)
-      BLOCK2F as binary(4)
+```
+local:3848 -> 172.16.1.180:3848
+Encrypt: Crypto3848
+Action: BREATH
+Data:
+  SESSION as string
+  IP as string(16)
+  MAC as binary(16)
+  INDEX as integer
+  BLOCK2A as data(4)
+  BLOCK2B as data(4)
+  BLOCK2C as data(4)
+  BLOCK2D as data(4)
+  BLOCK2E as data(4)
+  BLOCK2F as data(4)
+```
 
 ### Logout
 
 #### Send
 
-    local:3848 -> 172.16.1.180:3848
-    Encrypt: Crypto3848
-    Action: BREATH
-    Data:
-      SESSION as string
-      IP as string(16)
-      MAC as binary(16)
-      INDEX as integer
-      BLOCK2A as binary(4)
-      BLOCK2B as binary(4)
-      BLOCK2C as binary(4)
-      BLOCK2D as binary(4)
-      BLOCK2E as binary(4)
-      BLOCK2F as binary(4)
+```
+local:3848 -> 172.16.1.180:3848
+Encrypt: Crypto3848
+Action: BREATH
+Data:
+  SESSION as string
+  IP as string(16)
+  MAC as binary(16)
+  INDEX as integer
+  BLOCK2A as data(4)
+  BLOCK2B as data(4)
+  BLOCK2C as data(4)
+  BLOCK2D as data(4)
+  BLOCK2E as data(4)
+  BLOCK2F as data(4)
+```
 
 ### Being disconnected
 
@@ -301,115 +323,119 @@ Make a **logout** request to end the session.
 
 ### Actions
 
-    // login
-    LOGIN = 0x01
+```
+// login
+LOGIN = 0x01
 
-    // login result
-    LOGIN_RET = 0x02
+// login result
+LOGIN_RET = 0x02
 
-    // breathe
-    BREATHE = 0x03
+// breathe
+BREATHE = 0x03
 
-    // breathe result
-    BREATHE_RET = 0x04
+// breathe result
+BREATHE_RET = 0x04
 
-    // logout
-    LOGOUT = 0x05
+// logout
+LOGOUT = 0x05
 
-    // logout result
-    LOGOUT_RET = 0x06
+// logout result
+LOGOUT_RET = 0x06
 
-    // get access point
-    ENTRIES = 0x07
+// get access point
+ENTRIES = 0x07
 
-    // return access point
-    ENTRIES_RET = 0x08
+// return access point
+ENTRIES_RET = 0x08
 
-    // disconnect
-    DISCONNECT = 0x09
+// disconnect
+DISCONNECT = 0x09
 
-    // confirm login
-    CONFIRM = 0x0A
+// confirm login
+CONFIRM = 0x0A
 
-    // confirm login result
-    CONFIRM_RET = 0x0B
+// confirm login result
+CONFIRM_RET = 0x0B
 
-    // get server
-    SERVER = 0X0C
+// get server
+SERVER = 0X0C
 
-    // return server
-    SERVER_RET = 0x0D
+// return server
+SERVER_RET = 0x0D
+```
 
 ### Fields
 
-    // username
-    USERNAME = 0x01
+```
+// username
+USERNAME = 0x01
 
-    // password
-    PASSWORD = 0x02
+// password
+PASSWORD = 0x02
 
-    // whether it is success
-    SUCCESS = 0x03
+// whether it is success
+SUCCESS = 0x03
 
-    // unknown, appears while login successfully
-    UNKNOWN05 = 0x05
-    UNKNOWN06 = 0x06
+// unknown, appears while login successfully
+UNKNOWN05 = 0x05
+UNKNOWN06 = 0x06
 
-    // mac address
-    MAC = 0x07
+// mac address
+MAC = 0x07
 
-    // session (NOTE: wrong in return packet)
-    SESSION = 0x08
+// session (NOTE: wrong in return packet)
+SESSION = 0x08
 
-    // ip address
-    IP = 0x09
+// ip address
+IP = 0x09
 
-    // access point
-    ENTRY = 0x0A
+// access point
+ENTRY = 0x0A
 
-    // message (NOTE: wrong in return packet)
-    MESSAGE = 0x0B
+// message (NOTE: wrong in return packet)
+MESSAGE = 0x0B
 
-    // server ip address
-    SERVER = 0x0C
+// server ip address
+SERVER = 0x0C
 
-    // is dhcp enabled
-    DHCP = 0x0E
+// is dhcp enabled
+DHCP = 0x0E
 
-    // self-services website link
-    WEBSITE = 0x13
+// self-services website link
+WEBSITE = 0x13
 
-    // serial no
-    INDEX = 0x14
+// serial no
+INDEX = 0x14
 
-    // version
-    VERSION = 0x1F
+// version
+VERSION = 0x1F
 
-    // unknown, appears while login successfully
-    UNKNOWN20 = 0x20
-    UNKNOWN23 = 0x23
+// unknown, appears while login successfully
+UNKNOWN20 = 0x20
+UNKNOWN23 = 0x23
 
-    // disconnect reason
-    REASON = 0x24
+// disconnect reason
+REASON = 0x24
 
-    // 4 bytes blocks, send in breathe and logout
-    BLOCK2A = 0x2A
-    BLOCK2B = 0x2B
-    BLOCK2C = 0x2C
-    BLOCK2D = 0x2D
-    BLOCK2E = 0x2E
-    BLOCK2F = 0x2F
+// 4 bytes blocks, send in breathe and logout
+BLOCK2A = 0x2A
+BLOCK2B = 0x2B
+BLOCK2C = 0x2C
+BLOCK2D = 0x2D
+BLOCK2E = 0x2E
+BLOCK2F = 0x2F
 
-    // unknown 4 bytes blocks, appears while confirmed
-    BLOCK30 = 0x30
-    BLOCK31 = 0x31
+// unknown 4 bytes blocks, appears while confirmed
+BLOCK30 = 0x30
+BLOCK31 = 0x31
 
-    // unknown
-    UNKOWN32 = 0x32
+// unknown
+UNKOWN32 = 0x32
 
-    // 4 bytes blocks, appears while login successfully
-    BLOCK34 = 0x34
-    BLOCK35 = 0x35
-    BLOCK36 = 0x36
-    BLOCK37 = 0x37
-    BLOCK38 = 0x38
+// 4 bytes blocks, appears while login successfully
+BLOCK34 = 0x34
+BLOCK35 = 0x35
+BLOCK36 = 0x36
+BLOCK37 = 0x37
+BLOCK38 = 0x38
+```
