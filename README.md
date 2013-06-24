@@ -73,12 +73,14 @@ A naked (non-encrypted) packet is in this structure:
 2. 1 byte represented the length of whole packet
 3. 16 bytes `MD5` hash
 4. 1 byte of the `key` of the first field
-5. 1 byte of the `length` of the first field
+5. 1 byte of the `length` of the first field (including the `key` and the `length` itself)
 6. the `data` of the first field
-7. 1 byte of the `key` of the second field
+7. 1 byte of the `key` of the second field (including the `key` and the `length` itself)
 8. 1 byte of the `length` of the second field
 9. the `data` of the second field
 10. ......
+
+Note that fields' `length` is 2 bytes shorter than the field is.
 
 ### Generate a packet
 
@@ -284,6 +286,8 @@ LOGIN_RET:
 
 * Only contains `SUCCESS`, `SESSION` and `MESSAGE` if not successed (i.e. wrong password)
 * Will contains an unknown field `UNKNOWN95` with 24 bytes of `0x00` and an unknown field `UNKNOWN06` if it is in low-speed mode.
+* The `length` of field `SESSION` received is 2 bytes shorter than the field is.
+* The `length` of field `MESSAGE` received is 2 bytes shorter than the field is.
 
 ### Confirm
 
@@ -301,7 +305,7 @@ CONFIRM:
 #### Receive
 
 ```
-server:3849 -> local:random
+server:3849 -> local:random crypto3849
 CONFIRM_RET
   UNKNOWN30 as data(4)
   UNKNOWN31 as data(4)
@@ -343,6 +347,8 @@ BREATHE_RET:
   INDEX as integer
 ```
 
+* The `length` of field `SESSION` received is 2 bytes shorter than the field is.
+
 ### Offline
 
 #### Send
@@ -376,6 +382,8 @@ LOGOUT_RET:
   INDEX as integer
 ```
 
+* The `length` of field `SESSION` received is 2 bytes shorter than the field is.
+
 ### Being disconnected
 
 Once you have bean disconnected, you'll receive a packet from the server:
@@ -391,6 +399,7 @@ DISCONNECT:
   * `0x00` - No valid breathe is made for a long time.
   * `0x01` - You're disconnected forcibly (by administrator, maybe).
   * `0x02` - You've reached your network traffic limit.
+* The `length` of field `SESSION` received is 2 bytes shorter than the field is.
 
 
 ## Consts
