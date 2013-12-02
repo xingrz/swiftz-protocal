@@ -18,7 +18,7 @@ Tested compatible with **Edusupplicant 3.7.8**.
 
 * [SwiftzMac](https://github.com/xingrz/SwiftzMac) (for Mac OS X >= 10.8)
 * [swiftz.js](https://github.com/xingrz/swiftzjs) (for Linux/Mac, command-line, STILL IN PROGRESS)
-* [Swiftoid](https://github.com/xingrz/swiftz-android) (For Android >= 4.0.3, STILL IN PROGRESS)
+* [Swiftoid](https://github.com/xingrz/swiftz-android) (for Android >= 4.0.3, STILL IN PROGRESS)
 * OpenSupplicant (for Windows, stopped development for a long time)
 
 ## Representation
